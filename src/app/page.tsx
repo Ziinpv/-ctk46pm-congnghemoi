@@ -1,71 +1,63 @@
 import Link from "next/link";
-import Counter from "@/components/counter";
+import { createClient } from "@/lib/supabase/server";
 
 export default function HomePage() {
-  return (
-    <div className="mx-auto max-w-5xl py-12">
-      <div className="mb-12 rounded-2xl border border-[#CDE3EB] bg-white p-10 text-center dark:border-gray-700 dark:bg-gray-800">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#CDE3EB] text-3xl text-[#143A52] dark:bg-gray-700 dark:text-white">
-          L
-        </div>
-        <h1 className="mb-4 text-4xl font-bold text-[#143A52] md:text-5xl dark:text-white">
-          Xin chao! Toi la Hoang Long
-        </h1>
-        <p className="mx-auto mb-8 max-w-2xl text-lg text-[#6E828A] dark:text-gray-300">
-          Sinh vien Cong nghe Thong tin tai Dai hoc Da Lat, dam me phat trien web va cac cong
-          nghe moi.
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/projects"
-            className="rounded-lg bg-[#143A52] px-6 py-3 text-white transition-colors hover:bg-[#6E828A] dark:bg-gray-700 dark:hover:bg-gray-600"
-          >
-            Xem du an
-          </Link>
-          <Link
-            href="/contact"
-            className="rounded-lg border border-[#CDE3EB] px-6 py-3 text-[#143A52] transition-colors hover:bg-[#E3EFF3] dark:border-gray-700 dark:text-white dark:hover:bg-gray-700"
-          >
-            Lien he
-          </Link>
-        </div>
-        <div className="mt-8">
-          <Counter />
-        </div>
-      </div>
+  return <HomeContent />;
+}
 
-      <div className="mb-12 rounded-2xl border border-[#CDE3EB] bg-white p-8 dark:border-gray-700 dark:bg-gray-800">
-        <h2 className="mb-6 text-center text-2xl font-bold text-[#143A52] dark:text-white">Ky nang</h2>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {[
-            "JavaScript",
-            "TypeScript",
-            "Next.js",
-            "React",
-            "Tailwind CSS",
-            "Node.js",
-            "Dart/Flutter",
-            "C#/.NET",
-            "Python",
-            "SQL",
-          ].map((skill) => (
-            <div
-              key={skill}
-              className="rounded-lg border border-[#CDE3EB] bg-[#E3EFF3] p-3 text-center text-[#143A52] dark:border-gray-700 dark:bg-gray-700 dark:text-white"
-            >
-              {skill}
-            </div>
+async function HomeContent() {
+  const supabase = await createClient();
+  const { data: posts, error } = await supabase
+    .from("posts")
+    .select(
+      `
+      *,
+      profiles (
+        display_name,
+        avatar_url
+      )
+    `,
+    )
+    .eq("status", "published")
+    .order("published_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching posts:", error);
+  }
+
+  return (
+    <main className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">Bai viet moi nhat</h1>
+      {posts && posts.length > 0 ? (
+        <div className="space-y-6">
+          {posts.map((post) => (
+            <article key={post.id} className="bg-white p-6 rounded-lg shadow border border-gray-200">
+              <Link href={`/posts/${post.slug}`}>
+                <h2 className="text-2xl font-semibold hover:text-blue-600 transition-colors">
+                  {post.title}
+                </h2>
+              </Link>
+              {post.excerpt ? <p className="text-gray-600 mt-2">{post.excerpt}</p> : null}
+              <div className="flex items-center gap-4 mt-4 text-sm text-gray-500">
+                <span>Boi {post.profiles?.display_name || "An danh"}</span>
+                <span>•</span>
+                <span>
+                  {post.published_at
+                    ? new Date(post.published_at).toLocaleDateString("vi-VN")
+                    : "Chua xuat ban"}
+                </span>
+              </div>
+              <Link href={`/posts/${post.slug}`} className="inline-block mt-4 text-blue-600 hover:text-blue-500">
+                Doc tiep →
+              </Link>
+            </article>
           ))}
         </div>
-      </div>
-
-      <div className="rounded-2xl border border-[#CDE3EB] bg-white p-8 text-center dark:border-gray-700 dark:bg-gray-800">
-        <h2 className="mb-3 text-2xl font-bold text-[#143A52] dark:text-white">Doc Blog cua toi</h2>
-        <p className="mb-4 text-[#6E828A] dark:text-gray-300">Chia se kien thuc va kinh nghiem hoc lap trinh thuc te.</p>
-        <Link href="/blog" className="font-semibold text-[#143A52] hover:underline dark:text-white">
-          Xem blog -
-        </Link>
-      </div>
-    </div>
+      ) : (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <p className="text-gray-500">Chua co bai viet nao.</p>
+        </div>
+      )}
+    </main>
   );
 }

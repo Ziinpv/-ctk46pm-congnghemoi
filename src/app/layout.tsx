@@ -1,22 +1,15 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import Footer from "@/components/footer";
-import Navbar from "@/components/navbar";
+import { Header } from "@/components/layout/header";
 
 const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
+  subsets: ["latin", "vietnamese"],
 });
 
 export const metadata: Metadata = {
-  title: "Portfolio - Hoang Long",
-  description: "Website portfolio ca nhan - CTK46",
+  title: "Simple Blog",
+  description: "Supabase blog lab",
 };
 
 export default function RootLayout({
@@ -25,14 +18,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="vi"
-      className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full bg-[var(--background)] text-[var(--foreground)] flex flex-col">
-        <Navbar />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
-        <Footer />
+    <html lang="vi">
+      <body className={`${inter.className} min-h-screen bg-gray-50 text-gray-900`}>
+        <Header />
+        <main>{children}</main>
       </body>
     </html>
   );
